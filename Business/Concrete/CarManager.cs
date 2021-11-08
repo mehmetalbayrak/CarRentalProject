@@ -18,7 +18,10 @@ namespace Business.Concrete
 
         public void Add(Car car)
         {
-            throw new NotImplementedException();
+            if (car.Description.Length>2 && car.DailyPrice>0)
+            {
+                 _carDal.Add(car);
+            }
         }
 
         public void Delete(Car car)
