@@ -1,6 +1,10 @@
 ﻿using Business.Abstract;
+using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Caching;
+using Core.Aspects.Autofac.Performance;
+using Core.Aspects.Autofac.Transaction;
 using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Validation;
 using Core.Utilities.Results;
@@ -22,8 +26,9 @@ namespace Business.Concrete
         {
             _carDal = carDal;
         }
-
+        [SecuredOperation("car.add,admin")]
         [ValidationAspect(typeof(CarValidator))]
+        [CacheRemoveAspect("ICarService.Get")]
         public IResult Add(Car car)
         {
             if (car.Description.Length > 2 && car.DailyPrice > 0)
@@ -39,7 +44,7 @@ namespace Business.Concrete
             _carDal.Delete(car);
             return new SuccessResult();
         }
-
+        [CacheAspect]
         public IDataResult<List<Car>> GetAll()
         {
             if (DateTime.Now.Hour == 10)
@@ -48,7 +53,7 @@ namespace Business.Concrete
             }
             return new SuccessDataResult<List<Car>>(_carDal.GetAll(), Messages.CarListed);
         }
-
+        [PerformanceAspect(5)]
         public IDataResult<Car> GetById(int brandId)
         {
             return new SuccessDataResult<Car>(_carDal.Get(x => x.BrandId == brandId));
@@ -58,7 +63,7 @@ namespace Business.Concrete
         {
             return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails());
         }
-
+        //[TransactionScopeAspect]
         public IResult Update(Car car)
         {
             _carDal.Update(car);
